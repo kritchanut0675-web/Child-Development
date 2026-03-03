@@ -15,42 +15,52 @@
     </header>
 
     <div id="activity-container" class="space-y-4 max-w-md mx-auto">
-        <div class="text-center py-10 text-gray-400">กำลังโหลดแผนกิจกรรม...</div>
+        <div id="loader" class="text-center py-10 text-gray-400">
+            <p>กำลังโหลดแผนกิจกรรมจาก AI...</p>
+            <p class="text-xs mt-2 text-gray-300">(ครั้งแรกอาจใช้เวลา 5-10 วินาที)</p>
+        </div>
     </div>
 
     <script>
-        // *** สำคัญ: เอา Web App URL จาก GAS มาใส่ที่นี่ ***
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzub8bcsBZiLoRb3y27oloCw-7ZxO6I7XZudAb1qeQq_Z4kLMuZ2YF3T8Ep5QmdNRuQ/exec";
+        // *** ใส่ URL ที่ได้จากการ Deploy GAS ของคุณที่นี่ ***
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxwId7Radz-0nedhcmfWjPjmVtH3ZiOuiwi2ON9qr_yoUSk3HmX6Fk7qQwKAhQHhPl9/exec";
 
         async function loadActivities() {
-    try {
-        // เพิ่มโหมด no-cors หรือตรวจสอบว่า GAS Deploy เป็น Anyone แล้ว
-        const response = await fetch(GAS_URL + "?action=getPlan");
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-        render(data.activities);
-    } catch (e) {
-        console.log(e);
-        document.getElementById('activity-container').innerHTML = "กำลังรอข้อมูลจาก AI... (หากนานเกินไป ให้ตรวจสอบการ Deploy Web App ใน GAS)";
-    }
-}
+            try {
+                const response = await fetch(GAS_URL + "?action=getPlan", {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+                const data = await response.json();
+                render(data.activities);
+            } catch (e) {
+                document.getElementById('activity-container').innerHTML = 
+                    `<div class='p-4 bg-red-50 text-red-500 rounded-xl text-center'>
+                        เชื่อมต่อฐานข้อมูลไม่ได้ <br> โปรดเช็คการ Deploy ใน GAS เป็น 'Anyone'
+                     </div>`;
+            }
+        }
 
         function render(activities) {
             const container = document.getElementById('activity-container');
             container.innerHTML = '';
             activities.forEach(act => {
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl p-5 shadow-sm border-l-4 border-indigo-500";
+                card.className = "bg-white rounded-2xl p-5 shadow-sm border-l-4 border-indigo-500 transition-all hover:shadow-md";
                 card.innerHTML = `
-                    <span class="text-xs font-bold text-indigo-500">${act.time}</span>
-                    <h3 class="text-lg font-semibold text-gray-800">${act.title}</h3>
-                    <p class="text-sm text-gray-600 mt-2">${act.steps}</p>
-                    <div class="mt-3 text-xs bg-indigo-50 text-indigo-600 inline-block px-2 py-1 rounded-full">✨ ${act.focus}</div>
+                    <div class="flex justify-between">
+                        <span class="text-xs font-bold text-indigo-400">${act.time}</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mt-1">${act.title}</h3>
+                    <p class="text-sm text-gray-600 mt-2"><strong>วิธีเล่น:</strong> ${act.steps}</p>
+                    <div class="mt-3 flex gap-2">
+                        <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full">✨ ${act.focus}</span>
+                    </div>
                 `;
                 container.appendChild(card);
             });
         }
-        
+
         loadActivities();
     </script>
 </body>
