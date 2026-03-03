@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Play Coach - กิจกรรมวันนี้</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Kanit', sans-serif; background-color: #f0f4f8; }
+        .card-done { opacity: 0.6; filter: grayscale(1); }
+    </style>
+</head>
+<body class="p-4">
+
+    <header class="mb-6 text-center">
+        <h1 class="text-2xl font-bold text-blue-600">⚽ AI Play Coach</h1>
+        <p class="text-gray-500 text-sm">ออกแบบกิจกรรมเพื่อพัฒนาการลูกรัก</p>
+    </header>
+
+    <div class="bg-white rounded-xl p-4 mb-6 shadow-sm">
+        <div class="flex justify-between mb-2">
+            <span class="text-sm font-medium">ความสำเร็จวันนี้</span>
+            <span id="progress-text" class="text-sm font-medium text-blue-600">0%</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+            <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <div id="activity-container" class="space-y-4">
+        <div class="text-center py-10 text-gray-400">กำลังดึงแผนกิจกรรมจาก AI...</div>
+    </div>
+
+    <script>
+        // สมมติข้อมูล JSON ที่ได้จาก Google Apps Script (GAS)
+        const mockData = {
+            "activities": [
+                { "id": 1, "time": "เช้า", "title": "นักสืบสีสัน", "items": "ของเล่นที่มีสีต่างๆ", "steps": "ให้ลูกหยิบของตามสีที่คุณพ่อบอก", "focus": "สายตาและสติปัญญา", "status": "pending" },
+                { "id": 2, "time": "บ่าย", "title": "จิตรกรน้อย", "items": "สีเทียน, กระดาษ", "steps": "ลากเส้นตามรอยปะหรือระบายสีอิสระ", "focus": "กล้ามเนื้อมัดเล็ก", "status": "pending" },
+                { "id": 3, "time": "เย็น", "title": "นิทานก่อนนอน", "items": "หนังสือนิทาน", "steps": "อ่านนิทานและให้ลูกลองทายตอนจบ", "focus": "ภาษาและอารมณ์", "status": "pending" }
+            ]
+        };
+
+        function renderActivities(data) {
+            const container = document.getElementById('activity-container');
+            container.innerHTML = '';
+
+            data.activities.forEach(act => {
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-2xl p-5 shadow-md border-l-4 ${getTimeColor(act.time)} transition-all`;
+                card.id = `card-${act.id}`;
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-600">${act.time}</span>
+                            <h3 class="text-lg font-semibold mt-1 text-gray-800">${act.title}</h3>
+                        </div>
+                        <input type="checkbox" onchange="toggleActivity(${act.id})" class="w-6 h-6 rounded-full border-gray-300 text-blue-600 focus:ring-blue-500">
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2"><strong>อุปกรณ์:</strong> ${act.items}</p>
+                    <p class="text-sm text-gray-600 mt-1 leading-relaxed">${act.steps}</p>
+                    <div class="mt-3 flex items-center text-xs text-blue-500 font-medium">
+                        <span class="bg-blue-50 px-2 py-1 rounded-full">✨ ${act.focus}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            updateProgress();
+        }
+
+        function getTimeColor(time) {
+            if (time.includes('เช้า')) return 'border-yellow-400';
+            if (time.includes('บ่าย')) return 'border-orange-400';
+            return 'border-indigo-400';
+        }
+
+        function toggleActivity(id) {
+            const card = document.getElementById(`card-${id}`);
+            card.classList.toggle('card-done');
+            updateProgress();
+            
+            // ในเครื่องจริง คุณจะส่งคำสั่งไปที่ GAS ตรงนี้
+            // google.script.run.updateStatusInSheet(id, 'done');
+        }
+
+        function updateProgress() {
+            const total = document.querySelectorAll('input[type="checkbox"]').length;
+            const checked = document.querySelectorAll('input[type="checkbox"]:checked').length;
+            const percent = Math.round((checked / total) * 100) || 0;
+            
+            document.getElementById('progress-bar').style.width = percent + '%';
+            document.getElementById('progress-text').innerText = percent + '%';
+        }
+
+        // เริ่มต้นแสดงผล
+        renderActivities(mockData);
+    </script>
+</body>
+</html>
