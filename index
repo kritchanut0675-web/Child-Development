@@ -23,15 +23,17 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzub8bcsBZiLoRb3y27oloCw-7ZxO6I7XZudAb1qeQq_Z4kLMuZ2YF3T8Ep5QmdNRuQ/exec";
 
         async function loadActivities() {
-            try {
-                // เรียกฟังก์ชัน generateDailyPlan จาก GAS
-                const response = await fetch(GAS_URL + "?action=getPlan");
-                const data = await response.json();
-                render(data.activities);
-            } catch (e) {
-                document.getElementById('activity-container').innerHTML = "เกิดข้อผิดพลาดในการดึงข้อมูล";
-            }
-        }
+    try {
+        // เพิ่มโหมด no-cors หรือตรวจสอบว่า GAS Deploy เป็น Anyone แล้ว
+        const response = await fetch(GAS_URL + "?action=getPlan");
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        render(data.activities);
+    } catch (e) {
+        console.log(e);
+        document.getElementById('activity-container').innerHTML = "กำลังรอข้อมูลจาก AI... (หากนานเกินไป ให้ตรวจสอบการ Deploy Web App ใน GAS)";
+    }
+}
 
         function render(activities) {
             const container = document.getElementById('activity-container');
